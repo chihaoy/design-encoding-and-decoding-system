@@ -1,0 +1,438 @@
+li $r6, 3b'111    #store the i value to r6 register, initially 8(we want i=30)
+sh $r6, 3b'001           #left shift 2 times, i = 8b'00011100 now
+li $k,  3b'010           #use k later for r6(i) to get i=30
+op $r6, 3b'010           #i = 8b'00011100 + 3b'010 = 00011110 = 30
+lb $r4, $r6              #r4 = mem[i] 30
+sh $r4, 3b'100          #right shift once, get r4 = 0 b4  b3  b2  s4 b1 s2  s1 
+mov     $r2, $r4                # $r2 = 0 0 0 0 0 a7 a6 a5
+sh      $r2,  3b'111                     
+mov     $r1, $r4                # $r1 = 0 0 0 0 0 a3 a2 a1
+li      $k, 3b'111
+op      $r1, 3b'001
+mov     $k, $r1                 # 0 0 0 0 0 a7 a6 a5 xor 0 0 0 0 0 a3 a2 a1
+op      $r2, 3b'000             # r2 = 0 0 0 0 0 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r1, $r4                
+li      $k, 3b'100
+sh      $k,  3b'000 
+op      $r1, 3b'001             # r1 = 0 0 0 0 a4 0 0 0
+mov     $k, $r1 
+op      $r2, 3b'010             # r1 = 0 0 0 0 a4 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r4, $r2
+mov     $r2, $r4                # $r2 = 0 0 0 0 0 0 a4 (a7 xor a3)
+sh      $r2,  3b'101            # right shift two
+mov     $r1, $r4                # $r1 = 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+li      $k,  3b'011             
+op      $r1, 3b'001             # $r1 = 0 0 0 0 0 0 (a6 xor a2) (a5 xor a1)
+mov     $k, $r1                 
+op      $r2, 3b'000             # $r2 0 0 0 0 0 0 ((a6 xor a2) xor a4) ((a5 xor a1) xor (a7 xor a3))
+mov     $r1, $r2                
+sh      $r1,  3b'100            # r1 = ((a6 xor a2) xor a4)
+li      $k, 3b'001
+op      $r2, 3b'001             # r2 = ((a5 xor a1) xor (a7 xor a3))
+mov     $k, $r1                 
+op      $r2, 3b'000 
+mov     $r4, $r2                # now r4 = xor b4  b3  b2  s4 b1 s2  s1
+li $k, 3b'001
+op $r6, 3b'010          #i +=1
+lb $r3, $r6              #temp2 = mem[i+1] 31
+mov     $r2, $r3                # $r2 = 0 0 0 0 a8 a7 a6 a5
+sh      $r2,  3b'111                     
+mov     $r1, $r3                # $r1 = 0 0 0 0 a4 a3 a2 a1
+li      $r5, 3b'111
+sh      $r5, 3b'000
+li      $k, 3b'001
+op      $r5, 3b'010
+mov     $k, $r5
+op      $r1, 3b'001
+mov     $k, $r1                 # 0 0 0 0 a8 a7 a6 a5 xor 0 0 0 0 a4 a3 a2 a1
+op      $r2, 3b'000             # r2 = 0 0 0 0 (a8 xor a4) (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r1, $r2                # $r1 = 0 0 0 0 0 0 (a8 xor a4) (a7 xor a3)
+sh      $r1,  3b'101            # right shift two
+mov     $r3, $r2                # $r3 = 0 0 0 0 (a8 xor a4)  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+li      $k,  3b'011             
+op      $r3, 3b'001             # $r3 = 0 0 0 0 0 0 (a6 xor a2) (a5 xor a1)
+mov     $k, $r3                 
+op      $r1, 3b'000             # $r1 = 0 0 0 0 0 0 ((a6 xor a2) xor (a8 xor a4)) ((a5 xor a1) xor (a7 xor a3))
+mov     $r2, $r1                
+sh      $r2,  3b'100            # r2 = ((a6 xor a2) xor (a8 xor a4))
+li      $k, 3b'001
+op      $r1, 3b'001             # r1 = ((a5 xor a1) xor (a7 xor a3))
+mov     $k, $r1                 
+op      $r2, 3b'000             # r2 = (a6 xor a2) xor (a8 xor a4) xor (a5 xor a1) xor (a7 xor a3)
+mov     $r3, $r2                # store back to r3
+mov $k, $r4
+op $r3, 3b'000
+li $k, 3b'001
+op $r6, 3b'011          # i = i-1
+lb $r1, $r6              #mem[i=30]
+li $k, 3b'001            #k reg=1
+op $r1, 3b'001           #mem[i=30] AND 00000001 -> get mem[i][0]
+mov $k, $r1              #move r1 to k
+op $r3, 3b'000           #try to caclulate  s[0] = (G[0] == mem[i][0]) 
+li $k, 3b'001            #k reg = 1
+op $r6, 3b'010           #i +1=31
+lb $r4, $r6               #temp1 = mem[i+1]
+sh $r4, 3b'100           #right shift 1 time, get r4 = mem[i+1][7:1]=0 b11 b10 b9 b8 b7  b6  b5
+mov     $r2, $r4                # $r2 = 0 0 0 0 0 a7 a6 a5
+sh      $r2,  3b'111                     
+mov     $r1, $r4                # $r1 = 0 0 0 0 0 a3 a2 a1
+li      $k, 3b'111
+op      $r1, 3b'001
+mov     $k, $r1                 # 0 0 0 0 0 a7 a6 a5 xor 0 0 0 0 0 a3 a2 a1
+op      $r2, 3b'000             # r2 = 0 0 0 0 0 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r1, $r4                
+li      $k, 3b'100
+sh      $k,  3b'000 
+op      $r1, 3b'001             # r1 = 0 0 0 0 a4 0 0 0
+mov     $k, $r1 
+op      $r2, 3b'010             # r1 = 0 0 0 0 a4 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r4, $r2
+mov     $r2, $r4                # $r2 = 0 0 0 0 0 0 a4 (a7 xor a3)
+sh      $r2,  3b'101            # right shift two
+mov     $r1, $r4                # $r1 = 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+li      $k,  3b'011             
+op      $r1, 3b'001             # $r1 = 0 0 0 0 0 0 (a6 xor a2) (a5 xor a1)
+mov     $k, $r1                 
+op      $r2, 3b'000             # $r2 0 0 0 0 0 0 ((a6 xor a2) xor a4) ((a5 xor a1) xor (a7 xor a3))
+mov     $r1, $r2                
+sh      $r1,  3b'100            # r1 = ((a6 xor a2) xor a4)
+li      $k, 3b'001
+op      $r2, 3b'001             # r2 = ((a5 xor a1) xor (a7 xor a3))
+mov     $k, $r1                 
+op      $r2, 3b'000             # now r2 = xor b4  b3  b2  s4 b1 s2  s1
+sh $r2, 3b'010           #left shift 3 times G[8] << 3 (use to construct expected parity[8,4,2,1])
+mov $r5, $r2 
+lb $r1, $r6               #temp2 = mem[i+1]
+sh $r1, 3b'111           #right shift 4 time for = mem[i+1][7:4](b11:b8)
+sh $r1, 3b'010           #left shift 3 times get 0 b11 b10 b9 b8 0 0 0 
+li $k, 3b'001            #k reg = 1
+op $r6, 3b'011           #i = 31-1 = 30
+lb $r4, $r6              #mem[i]
+sh $r4, 3b'110           #right shift 3 times 
+sh $r4, 3b'101           #right shift 2 times again get 0 0 0 0 0 b4 b3 b2
+mov $k, $r1              
+op $r4, 3b'010           #r4 = 0 b11 b10 b9 b8 b4 b3 b2
+mov     $r2, $r4                # $r2 = 0 0 0 0 0 a7 a6 a5
+sh      $r2,  3b'111                     
+mov     $r1, $r4                # $r1 = 0 0 0 0 0 a3 a2 a1
+li      $k, 3b'111
+op      $r1, 3b'001
+mov     $k, $r1                 # 0 0 0 0 0 a7 a6 a5 xor 0 0 0 0 0 a3 a2 a1
+op      $r2, 3b'000             # r2 = 0 0 0 0 0 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r1, $r4                
+li      $k, 3b'100
+sh      $k,  3b'000 
+op      $r1, 3b'001             # r1 = 0 0 0 0 a4 0 0 0
+mov     $k, $r1 
+op      $r2, 3b'010             # r1 = 0 0 0 0 a4 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r4, $r2
+mov     $r2, $r4                # $r2 = 0 0 0 0 0 0 a4 (a7 xor a3)
+sh      $r2,  3b'101            # right shift two
+mov     $r1, $r4                # $r1 = 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+li      $k,  3b'011             
+op      $r1, 3b'001             # $r1 = 0 0 0 0 0 0 (a6 xor a2) (a5 xor a1)
+mov     $k, $r1                 
+op      $r2, 3b'000             # $r2 0 0 0 0 0 0 ((a6 xor a2) xor a4) ((a5 xor a1) xor (a7 xor a3))
+mov     $r1, $r2                
+sh      $r1,  3b'100            # r1 = ((a6 xor a2) xor a4)
+li      $k, 3b'001
+op      $r2, 3b'001             # r2 = ((a5 xor a1) xor (a7 xor a3))
+mov     $k, $r1                 
+op      $r2, 3b'000             # now r2 = xor b4  b3  b2  s4 b1 s2  s1
+mov     $r4, $r2                 # now r4 = xor b4  b3  b2  s4 b1 s2  s1
+sh $r4, 3b'001           #left shift 2 times G[4] << 2 (use to construct expected parity[8,4,2,1])
+mov $k, $r4
+op $r5, 3b'010          #r5 = 0 0 0 0 G[8] G[4] 0 0
+li $k, 3b'001            #k reg = 1
+op $r6, 3b'010           #i +1=31
+lb $r4, $r6              #mem[31]
+sh $r4, 3b'101           #right shift two times get 0 0 b11 b10 b9 b8 b7  b6
+li $k, 3b'011            
+op $r4, 3b'001           #and  0 0 b11 b10 b9 b8 b7  b6 with 00000011 to get b7 b6
+sh $r4, 3b'010           #get 0 0 0 b7 b6 0 0 0
+lb $r2, $r6              #mem[31]
+sh $r2, 3b'101           #right shift two times get 0 0 b11 b10 b9 b8 b7  b6
+sh $r2, 3b'111           #right shift four times to get 0 0 0 0 0  0   b11 b10
+sh $r2, 3b'000           #left shift one times get 0 0 0 0 0 b11 b10 0
+sh $r2, 3b'011           #left shift four times to get 0 b11 b10  0 0 0 0  0   
+mov $k, $r2
+op $r4, 3b'010          $r4 = 0 b11 b10 b7 b6 0 0 0
+li $k, 3b'001            #k reg = 1
+op $r6, 3b'011           #i = 31-1 = 30
+lb $r2, $r6              #mem[30]
+sh $r2, 3b'111           #right shift four times to get 0 0 0 0 b4  b3  b2  s4
+sh $r2, 3b'101           #right shift two times to get 0 0 0 0 0 0 b4 b3
+sh $r2, 3b'000           #left shift one time get 0 0 0 0 0  b4 b3 0
+mov $k, $r2             
+op $r4, 3b'010           # r4 = 0 b11 b10 b7 b6 b4 b3 0
+lb $r2, $r6              #mem[30]
+sh $r2, 3b'110           #right shift three times to get 0 0 0 b4  b3  b2  s4 b1
+li $k, 3b'001      
+op $r2, 3b'001           #get b1
+mov $k, $r2
+op $r4, 3b'010           #r4 = 0 b11 b10 b7 b6 b4 b3 b1
+mov     $r2, $r4                # $r2 = 0 0 0 0 0 a7 a6 a5
+sh      $r2,  3b'111                     
+mov     $r1, $r4                # $r1 = 0 0 0 0 0 a3 a2 a1
+li      $k, 3b'111
+op      $r1, 3b'001
+mov     $k, $r1                 # 0 0 0 0 0 a7 a6 a5 xor 0 0 0 0 0 a3 a2 a1
+op      $r2, 3b'000             # r2 = 0 0 0 0 0 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r1, $r4                
+li      $k, 3b'100
+sh      $k,  3b'000 
+op      $r1, 3b'001             # r1 = 0 0 0 0 a4 0 0 0
+mov     $k, $r1 
+op      $r2, 3b'010             # r1 = 0 0 0 0 a4 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r4, $r2
+mov     $r2, $r4                # $r2 = 0 0 0 0 0 0 a4 (a7 xor a3)
+sh      $r2,  3b'101            # right shift two
+mov     $r1, $r4                # $r1 = 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+li      $k,  3b'011             
+op      $r1, 3b'001             # $r1 = 0 0 0 0 0 0 (a6 xor a2) (a5 xor a1)
+mov     $k, $r1                 
+op      $r2, 3b'000             # $r2 0 0 0 0 0 0 ((a6 xor a2) xor a4) ((a5 xor a1) xor (a7 xor a3))
+mov     $r1, $r2                
+sh      $r1,  3b'100            # r1 = ((a6 xor a2) xor a4)
+li      $k, 3b'001
+op      $r2, 3b'001             # r2 = ((a5 xor a1) xor (a7 xor a3))
+mov     $k, $r1                 
+op      $r2, 3b'000             # now r2 = xor b4  b3  b2  s4 b1 s2  s1
+mov     $r4, $r2                 # now r4 = xor b4  b3  b2  s4 b1 s2  s1
+sh $r4, 3b'000           #left shift one time G[2] << 1 (use to construct expected parity[8,4,2,1])
+mov $k, $r4
+op $r5, 3b'010          #r5 = 0 0 0 0 G[8] G[4] G[2] 0
+lb $r4, $r6              #mem[30]
+sh $r4, 3b'111           #right shift four times to get 0 0 0 0 b4  b3  b2  s4
+sh $r4, 3b'100           #right shift 1 times to get 0 0 0 0 0 b4 b3 b2
+li $k, 3b'101  
+op $r4, 3b'001           #get 0 0 0 0 0 b4 0 b2
+lb $r2, $r6               #mem[30]
+sh $r2, 3b'110           #right shift three times to get 0 0 0 b4  b3  b2  s4 b1
+li $k, 3b'001
+op $r2, 3b'001           #get 0 0 0 0 0 0 0 b1
+sh $r2, 3b'000           #left shift once get 0 0 0 0 0 0 b1 0
+mov $k, $r2
+op $r4, 3b'010          #get 0 0 0 0 0 b4 b1 b2
+li $k, 3b'001            #k reg = 1
+op $r6, 3b'010           #i +1=31
+lb $r2, $r6               #mem[31]
+sh $r2, 3b'100           #right shift 1 time = mem[i+1][7:1]
+li $k, 3b'101            
+op $r2, 3b'001           #get 0 0 0 0 0 b7 0 b5
+sh $r2, 3b'010           #get 0 0 b7 0 b5 0 0 0
+mov $k, $r2
+op $r4, 3b'010           #get  0 0 b7 0 b5 b4 b1 b2
+lb $r2, $r6               #mem[31]
+sh $r2, 3b'111           #right shift 4 time  get 0 0 0 0 b11 b10 b9 b8
+sh $r2, 3b'100           #right shift 1 time  get 0 0 0 0 0 b11 b10 b9 
+li $k, 3b'101
+op $r2, 3b'001           #get 0 0 0 0 0 b11 0 b9
+sh $r2, 3b'011          #get 0  b11 0 b9 0 0 0 0 
+mov $k, $r2
+op $r4, 3b'010           #get 0 b11 b7 b9 b5 b4 b1 b2
+mov     $r2, $r4                # $r2 = 0 0 0 0 0 a7 a6 a5
+sh      $r2,  3b'111                     
+mov     $r1, $r4                # $r1 = 0 0 0 0 0 a3 a2 a1
+li      $k, 3b'111
+op      $r1, 3b'001
+mov     $k, $r1                 # 0 0 0 0 0 a7 a6 a5 xor 0 0 0 0 0 a3 a2 a1
+op      $r2, 3b'000             # r2 = 0 0 0 0 0 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r1, $r4                
+li      $k, 3b'100
+sh      $k,  3b'000 
+op      $r1, 3b'001             # r1 = 0 0 0 0 a4 0 0 0
+mov     $k, $r1 
+op      $r2, 3b'010             # r1 = 0 0 0 0 a4 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r4, $r2
+mov     $r2, $r4                # $r2 = 0 0 0 0 0 0 a4 (a7 xor a3)
+sh      $r2,  3b'101            # right shift two
+mov     $r1, $r4                # $r1 = 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+li      $k,  3b'011             
+op      $r1, 3b'001             # $r1 = 0 0 0 0 0 0 (a6 xor a2) (a5 xor a1)
+mov     $k, $r1                 
+op      $r2, 3b'000             # $r2 0 0 0 0 0 0 ((a6 xor a2) xor a4) ((a5 xor a1) xor (a7 xor a3))
+mov     $r1, $r2                
+sh      $r1,  3b'100            # r1 = ((a6 xor a2) xor a4)
+li      $k, 3b'001
+op      $r2, 3b'001             # r2 = ((a5 xor a1) xor (a7 xor a3))
+mov     $k, $r1                 
+op      $r2, 3b'000             # now r2 = xor b4  b3  b2  s4 b1 s2  s1
+mov     $r4, $r2                 # now r4 = xor b4  b3  b2  s4 b1 s2  s1
+mov $k, $r4
+op $r5, 3b'010           #get 0 0 0 0 G[8] G[4] G[2] G[1]
+mov $r1, $r5
+li $k, 3b'001            #k reg = 1
+op $r6, 3b'011           #i = 31-1 = 30
+lb $r2, $r6              #mem[30]
+sh $r2, 3b'111           #right shift four times
+op $r2, 3b'001           #r2: p4
+sh $r2, 3b'001          #left shift two time get 0 0 0 0 0 p[4] 0 0
+lb $r4, $r6              #mem[30]
+sh $r4, 3b'100           #right shift one time
+op $r4, 3b'001           #r4: p1  0 0 0 0 0 0 0 p[1]
+mov $k, $r4              
+op $r2, 3b'010           #get  0 0 0 0 0 p[4] 0 p[1]
+lb $r5, $r6              #mem[30]
+sh $r5, 3b'101           #right shift two times
+li $k, 3b'001
+op $r5, 3b'001           #r3: get p2
+sh $r5, 3b'000          #left shift one time get 0 0 0 0 0 0 p[2] 0
+mov $k, $r5
+op $r2, 3b'010          #0 0 0 0 0 p[4] p[2] p[1]
+li $k, 3b'001            #k reg = 1
+op $r6, 3b'010           #i +1=31
+lb $r4, $r6               #mem[31]
+op $r4, 3b'001            #get 0 0 0 0 0 0 0 p[8]
+sh $r4, 3b'010            #left shift three times get 0 0 0 0 p[8] 0 0 0
+mov $k, $r4
+op $r2, 3b'010             #get 0 0 0 0 p[8] p[4] p[2] p[1]
+mov $k, $r2
+op $r1, 3b'000           #get S[8,4,2,1] = G[8,4,2,1] ^ p[8,4,2,1]
+li $b, 3b'110              #load the jump code line li $b 3b'100  #load the jump code line 307(12 (1100) lines)) 
+sh $b, 3b'000
+li $k, 3b'000            
+b $r1, 3b'101            #jump to code line If S[8,4,2,1] != 4’b0000
+li $b, 3b'111            #load the jump 7 lines,jump to 303
+b $r3, 3b'101            #jump to code line if s[0] != 0
+li $r2, 3b'000           #F1F0 = 00
+li $b, 3b'111            #jump to 54 in pseducode, 10 steps
+li $k, 3b'011
+op $b, 3b'010            
+li $k, 3b'000            #restore k reg value back to 0
+b $r2, 3b'010            #just dummy branch: avoid execute the else statement
+li $r2, 3b'001           #F1F0 = 01 
+li $b, 3b'111            #jump to code 7 steps, 54 in pseducode
+b $r2, 3b'101            #just dummy branch: avoid execute the else statement
+li $b, 3b'100            #load the jump 4 step, 46 in pseducode
+b $r3, 3b'101            #jump to code line #F1F0 = 01 if s[0] !=0
+li $r2, 3b'011           #F1F0 = 11
+li $b, 3b'010            #jump to code line, 54 in pseducode
+b $r2, 3b'101            #just dummy branch: avoid execute the else statement
+li $r2, 3b'001           #F1F0 = 01 # finished getting F1F0 #now register in use: $r6(i=31), $r1(S[8,4,2,1]), $r2(F1F0) #construct the 
+li $b, 3b'100           #load the jump code 66 lines, 57 in pseducode now b =100
+sh $b, 3b'011           #b = 1000000 = 64
+li $k, 3b'011
+op $b, 3b'010           #b = 1000010 =66
+li $k, 3b'011
+b $r2, 3b'010            #jump to code line if F1F0 == 11
+li $b, 3b'111           #load the jump code 60 lines. 57 in pseducode now b: 111
+sh $b, 3b'010           # b = 111000
+li $k, 3b'101
+op $b, 3b'010           #b = 111100
+li $k, 3b'000  
+b $r2, 3b'010            #jump to the same code line if F1F0 == 00
+li $k, 3b'100            #let k = 8
+sh $k, 3b'000          
+li $b, 3b'010            #jump 2 steps to 68 in pseducode if acctemp(s[8,4,2,1])<8
+mov $r3, $r1             #r3 = acctemp = s[8,4,2,1](r1)
+b $r3, 3b'011            #jump if acctemp <8
+op $r3, 3b'011           #acctemp = accTemp -8
+li $k, 3b'000            # k =0
+li $b, 3b'010           #jump 2 steps, to 70 in pseduo
+b $r3, 3b'101            # branch if r3(accTemp)!=0
+li $r4, 3b'001          #make onehot(r4) = 00000001
+li $k, 3b'001           #k =1
+li $b, 3b'010           #jump 2 steps, to 72 in pseduo
+b $r3, 3b'101           #branch if r3(accTemp) !=1
+li $r4, 3b'010          #make onehot(r4) = 00000010
+li $k, 3b'010           #k =2
+li $b, 3b'010           #jump 2 steps, to 74 in pseduo
+b $r3, 3b'101           #branch if r3(accTemp) !=2
+li $r4, 3b'100          #make onehot(r4) = 00000100
+li $k, 3b'011           #k =3
+li $b, 3b'011           #jump 3 steps, to 76 in pseduo
+b $r3, 3b'101           #branch if r3(accTemp) !=3
+li $r4, 3b'100          #make onehot(r4) = 00000100
+sh $r4, 3b'000          #left shift to make onehot(r4) = 00001000
+li $k, 3b'100           #k =4
+li $b, 3b'011           #jump 3 steps, to 78 in pseduo
+b $r3, 3b'101           #branch if r3(accTemp) !=4
+li $r4, 3b'100          #make onehot(r4) = 00000100
+sh $r4, 3b'001          #left shift to make onehot(r4) = 00010000
+li $k, 3b'101           #k =5
+li $b, 3b'011           #jump 3 steps, to 80 in pseduo
+b $r3, 3b'101           #branch if r3(accTemp) !=5
+li $r4, 3b'100          #make onehot(r4) = 00000100
+sh $r4, 3b'010          #left shift to make onehot(r4) = 00100000
+li $k, 3b'110           #k =6
+li $b, 3b'011           #jump 3 steps, to 82 in pseduo
+b $r3, 3b'101           #branch if r3(accTemp) !=6
+li $r4, 3b'100          #make onehot(r4) = 00000100
+sh $r4, 3b'011          #left shift to make onehot(r4) = 01000000
+li $k, 3b'111           #k =7
+li $b, 3b'100           #jump 3 steps, to 85 in pseduo
+b $r3, 3b'101           #branch if r3(accTemp) != 7
+li $r4, 3b'100          #make onehot(r4) = 00000100
+sh $r4, 3b'011
+sh $r4, 3b'000          #left shift to make onehot(r4) = 10000000
+lb $r3, $r6             #r3: get MSW = mem[31]
+li $k, 3b'001
+op $r6, 3b'011          #i = i-1
+lb $r5, $r6             #r5: get LSW = mem[30]
+li $k, 3b'100           #k = 100
+sh $k, 3b'000           #k = 1000 = 8
+li $b, 3b'101           #jump 5 lines, to 88 in psedocode
+b $r1, 3b'011           #branch if s[8,4,2,1](r1) < k(8)
+mov $k, $r4             #move onehot(r4) to k reg
+op $r3, 3b'000          #r3(MSW) ^ onehot, store updated value back to r3
+li $b, 3b'011            #jump 3 lines, to code line,90 in pseducode
+b $r4, 3b'010            #just dummy branch: avoid execute the else statement
+mov $k, $r4             #move onehot to k reg
+op $r5, 3b'000          #r5(LSW) ^ onehot. store updated value back to r5 #JUMP TO HERE!! #now r5:LSW, r3:MSW, r2(F1F0), r6(i=31)
+li $b, 3b'101            #jump to code line 90, jump 5 lines
+b $k, 3b'010            #just dummy branch: avoid execute the else statement
+lb $r3, $r6             #r5: get LSW = mem[31]
+li $k, 3b'001
+op $r6, 3b'011          #i = i-1
+lb $r5, $r6             #r3: get MSW = mem[30]
+sh $r2, 3b'011          #r2 = 0 0 F1 F0 0 0 0 0
+sh $r2, 3b'001          #r2 = F1 F0 0 0 0 0 0 0
+mov $r1, $r3            
+sh $r1, 3b'111          #r1 = 0 0 0 0 b11 b10 b9 b8
+sh $r1, 3b'100          #r1 = 0 0 0 0 0 b11 b10 b9
+mov $k, $r1
+op $r2, 3b'010          #r2 = F1 F0 0 0 0 b11 b10 b9 #now r5:LSW, r3:MSW, r2(F1 F0 0 0 0 b11 b10 b9), r6(i=31)
+mov $r1, $r3            #r1 = b11 b10 b9 b8 b7  b6   b5   s8
+sh $r1, 3b'010          #r1 = b8 b7 b6 b5 s8 0 0 0
+sh $r1, 3b'111          #r1 = 0 0 0 0 b8 b7 b6 b5
+sh $r1, 3b'011          #r1 = b8 b7 b6 b5 0 0 0 0
+mov $r4, $r5            #r4 = b4  b3  b2  s4 b1 s2  s1    s0
+sh $r4, 3b'111          #r4 = 0 0 0 0 b4  b3  b2  s4
+sh $r4, 3b'100          #r4 = 0 0 0 0 0 b4  b3  b2
+sh $r4, 3b'000          #r4 = 0 0 0 0 b4  b3  b2 0
+mov $k, $r4            
+op $r1, 3b'010          #r1 = b8 b7 b6 b5 b4  b3  b2 0
+mov $r4, $r5             #r4 = b4  b3  b2  s4 b1 s2  s1    s0
+sh $r4, 3b'110          #r4 = 0 0 0 b4  b3  b2  s4 b1
+li $k, 3b'001
+op $r4, 3b'001          #r4 = 0 0 0 0 0 0 0 b1
+mov $k, $r4
+op $r1, 3b'010          #r1 = b8 b7 b6 b5 b4  b3  b2 b1 #now r1(b8 b7 b6 b5 b4  b3  b2 b1), r2(F1 F0 0 0 0 b11 b10 b9), r6(i=30)
+li $k, 3b'110
+op $r6, 3b'011      #r6: 30 - 6 = 24
+op $r6, 3b'011      #r6: 24 - 6 = 18
+op $r6, 3b'011      #r6: 18 - 6 = 12
+op $r6, 3b'011      #r6: 12 - 6 = 6
+op $r6, 3b'011      #r6: 6 - 6 = 0
+li $k, 3'b001
+op $r6, 3'b010       #r6=1
+sb $r2, $r6         #mem[1] = r1(b8 b7 b6 b5 b4  b3  b2 b1)
+li $k, 3b'001
+op $r6, 3b'011      #r6: 1-1 = 0
+sb $r1, $r6         #mem[0] = r2(F1 F0 0 0 0 b11 b10 b9)
+li $k, 3b'110
+op $r6, 3b'010      #r6: 0+6 =6
+op $r6, 3b'010      #r6: 6+6 =12
+op $r6, 3b'010      #r6: 12+6 =18
+op $r6, 3b'010      #r6: 18+6 =24
+op $r6, 3b'010      #r6: 24+6 = 30
+li $k, 3b'010       #k =2
+op $r6, 3b'010      #r6 = i = 30 +2 =32
+li $r2, 3'b111
+sh $r2, 3'b011   #(111000)
+li $k, 3'b011
+op $r2, 3'b010    (r2 = 59)
+mov $k, $r2
+li $b, 3'b010
+b $r6, 3'b001

@@ -1,0 +1,271 @@
+Li $r2, 3'b000 #(r2 = 0;)
+Li $r3, 3'b000 #(r3 = 0;)
+Li  $r1, 3'b111 (111)
+Sh $r1, 3'b001 (become 11100)
+Li  $k, 3'b011  
+Op $r1, 3'b000 (become 11111)
+Sh $r1, 3'b010 (become 11111000)
+Li $k, 3'b001 (001)
+Sh $k, 3'b011 (become 10000)
+Sh $k, 3'b000 (become 100000)
+Lb $r5, $k (r5 = mem[32])
+mov $k, $r1 (k = 11111000)
+Op $r5, 3'b001 (r5 = r5 && 11111000)
+Sh $r5, 3'b110 (r5 = r5 >> 3)
+Li  $r6, 3'b000 (keep track of iteration variable r6,after that #begin first for loop)
+Li  $r1, 3'b100 (1)
+Sh $r1, 3'b010
+Li  $k, 3'b011
+Op $r1, 3'b000 (100011=35)
+Li $b, 3'b000
+sb $b, $r1 (data_mem[35]=0)
+Li $r1, 3b’111 (111)
+Sh $r1, 3b’001 (become 11100)
+Li  $k, 3b’011  
+Op $r1, 3b’000 (become 11111)
+Sh $r1, 3b’010 (become 11111000)
+Lb $r4, $r6 (r4 =  mem[r6])
+Mov $k, $r1
+Op $r4, 3'b001 (r4 = r4 && 11111000)
+Sh $r4, 3'b110 (r4 = r4 >> 3)
+Mov $k, $r5
+Li  $b, 3'b101
+Sh $b, 3b’000 (jump for 10 lines)
+b $r4, 3b’101 (if (r4 != r5):jump 10 lines to process of r4= mem[r6+1] && 01111100, otherwise r2++; after 34 jump to 43,but actual+10 lines)
+li $k, 3'b000 (make it jumping 10 lines no sense line)
+Li  $k, 3b’001 (get the 1 for +1 for next line)
+Op $r2, 3b’010 (r2++;)
+Li  $r1, 3b’100 (100)
+Sh $r1, 3b’010
+Li  $k, 3b’011
+Op $r1, 3b’000 (100011=35)
+Li $b, 3b’001
+sb $b, $r1 (data_mem[35]=1)
+Li $r1, 3b’111 (111)
+Sh $r1, 3b’001 (become 11100)
+Li  $k, 3b’011  
+Op $r1, 3b’000 (become 11111)
+Sh $r1, 3b’001 (become 1111100)
+Lb $r4, $r6 (r4 =  mem[r6])
+Mov $k, $r1
+Op $r4, 3b001 (r4 = r4 && 01111100)
+Sh $r4, 3b’101 (r4 = r4 >> 2)
+Mov $k, $r5
+Li  $b, 3b’101
+Sh $b, 3b’000 (jump for 10 lines)
+b $r4, 3b’101 (if (r4 != r5):jump 10 lines to the process of r4= mem[r6] && 01111100, otherwise r2++;)
+li $k, 3'b000 (make it jumping 10 lines no sense line)
+Li $k, 3b'001 (get the 1 for +1 for next line)
+Op $r2, 3b'010 (r2++;)
+Li  $r1, 3b'100 (100)
+Sh $r1, 3b'010
+Li  $k, 3b'011
+Op $r1, 3b'000 (100011=35)
+Li $b, 3b'001
+sb $b, $r1 (data_mem[35]=1)
+Li $r1, 3b'111 (111)
+Sh $r1, 3b’001 (become 11100)
+Li  $k, 3b’011  
+Op $r1, 3b’000 (become 11111)
+Sh $r1, 3b’000 (become 111110)
+Lb $r4, $r6 (r4 =  mem[r6])
+Mov $k, $r1
+Op $r4, 3'b001 (r4 = r4 && 00111110)
+Sh $r4, 3'b100 (r4 = r4 >> 1)
+Mov $k, $r5
+Li  $b, 3b’101
+Sh $b, 3b’000 (jump for 10 lines)
+b $r4, 3b’101 (if (r4 != r5):jump 10 lines to the process of r4= mem[r6] && 01111100, otherwise r2++;)
+li $k, 3'b000 (make it jumping 10 lines no sense line)
+Li $k, 3b'001 (get the 1 for +1 for next line)
+Op $r2, 3b'010 (r2++;)
+Li  $r1, 3b'100 (1)
+Sh $r1, 3b'010
+Li  $k, 3b'011
+Op $r1, 3b'000 (100011=35)
+Li $b, 3b'001
+sb $b, $r1 (data_mem[35]=1)
+Li $r1, 3b'111 (111)
+Sh $r1, 3b’001 (become 11100)
+Li  $k, 3b’011  
+Op $r1, 3b’000 (become 11111)
+Lb $r4, $r6 (r4 =  mem[r6]])
+Mov $k, $r1
+Op $r4, 3'b001 (r4 = r4 &&  00011111)
+Mov $k, $r5
+Li  $b, 3b’101
+Sh $b, 3b’000 (jump for 10 lines)
+b $r4, 3b’101 (if (r4 != r5):jump 10 lines to the process of data_mem=.., otherwise r2++;)
+li $k, 3'b000 (make it jumping 10 lines no sense line)
+Li $k, 3b'001 (get the 1 for +1 for next line)
+Op $r2, 3b'010 (r2++;)
+Li  $r1, 3b'100 (1)
+Sh $r1, 3b'010
+Li  $k, 3b'011
+Op $r1, 3b'000 (100011=35)
+Li $b, 3b'001
+sb $b, $r1 (data_mem[35]=1)
+Li  $r1, 3b'100 (1)
+Sh $r1, 3b'010
+Li  $k, 3b'011
+Op $r1, 3b'000 (100011=35)
+Lb $k, $r1
+li $b, 3'b001
+Mov $r1, $k
+Li  $k, 3b’000
+Li  $b, 3b’011 (no need to load 35 again since $r1 is already 35)
+b $r1, 3b’010 (if (Data_mem[35]  == 0): jump to checking condition for exr6tr6ng loop,else:r3++)
+li $k, 3b’001 (get the 1 for +1 for next line)
+Op $r3, 3b’010 (r3++;)
+Li  $r1, 3b’100 (100)
+sh $r1, 3'b010 (100000 = 32)
+li $k, 3'b001
+op $r6, 3'b010 (r6 = r6+1)
+Li  $b, 3b’000 (zeroth entry)
+mov $k, $r1
+B   $r6, 3b’001 (if not reaching 32 yet,to lookup table zero entry,otherwise, keep going)
+Li  $r1, 3b’001 (1)
+Sh $r1, 3b’010
+Sh $r1, 3b’001 (100000)
+Li  $k, 3b’001
+Op $r1, 3b’010 (1000001=33)
+sb  $r2, $r1 (Mem[33] = r2)
+Op $r1, 3’b010 (1000010=34)
+sb  $r3, $r1 (Mem[34] = r3)
+Op $r1, 3’b010 (1000011=35)
+sb  $r2, $r1 (Mem[34] = r3)
+Li  $r4, 3'b000 (r4 = 0 #begin second for loop still need to do mem[35] = r2)
+Lb $r2, $r4 (get mem[r4])
+Li $b, 3b’111 (00000111)
+sh $b, 3b'000 (00001110)
+li $k, 3'b001 (1)
+op $b, 3'b010 (00001111)
+mov $k, $b (k=b)
+Op $r2, 3b’001 (r2 = (mem[r4] && 00001111))
+sh $r2, 3b’000 (r2 = r2 << 1)
+Li $k, 3b’001
+op $r4, 3b’010 (r4 = r4+1)
+Lb $r3, $r4 (get mem[r4+1])
+Li $k, 3b’100 (00000100)
+sh $k, 3b’011
+sh $k, 3b’000
+op $r3, 3b’001 (r3 = mem[r4+1] && 10000000)
+sh $r3, 3b’110
+sh $r3, 3b’110
+sh $r3, 3b'100 (r3 = r3 >> 7)
+mov $k, $r3
+op $r2, 3b’000 (r2 = r2 XOR r3)
+Li $k, 3b’001
+op $r4, 3b’011 (r4 = r4 - 1)
+mov $k, $r5
+Li  $b, 3b’101
+Sh $b, 3b’000
+b $r2, 3b’101 (if (r2 != r5):jump to r2 = r3, otherwise mem[35]++;)
+Li  $r1, 3b'100 (1)
+Li  $r1, 3b'100 (1) (nonsense just make ti 10 lines)
+Sh $r1, 3b'010
+Li  $k, 3b'011
+Op $r1, 3b'000 (100011=35)
+lb $b, $r1 (b = mem[35])
+Li $k, 3b’001
+Op $b, 3b’010 (b=b+1)
+sb $b, $r1 (r1 still has 35,mem[35]++)
+Lb $r2, $r4 (get mem[r4])
+Li $k, 3b’111 (00000111)
+Op $r2, 3b’001 (r2 = (mem[r4] && 00000111))
+sh $r2, 3b’001 (r2 = r2 << 2)
+Li $k, 3b’001
+op $r4, 3b’010 (r4 = r4+1)
+Lb $r3, $r4 (get mem[r4+1])
+Li $k, 3b’110 (00000110)
+sh $k, 3b’011
+sh $k, 3b’000
+op $r3, 3b’001 (r3 = mem[r4+1] && 11000000)
+sh $r3, 3b’110
+sh $r3, 3b’110 (r3 = r3 >> 6)
+mov $k, $r3
+op $r2, 3b’000 (r2 = r2 XOR r3)
+Li $k, 3b’001
+op $r4, 3b’011 (r4 = r4 - 1)
+mov $k, $r5
+Li  $b, 3b’101
+Sh $b, 3b’000
+b $r2, 3b’101 (if (r2 != r5):jump to r2 = r3, otherwise mem[35]++;)
+Li  $r1, 3b'100 (1)
+Li  $r1, 3b'100 (1) (nonsense just make ti 10 lines)
+Sh $r1, 3b'010
+Li  $k, 3b'011
+Op $r1, 3b'000 (100011=35)
+lb $b, $r1 (b = mem[35])
+Li $k, 3b’001
+Op $b, 3b’010 (b=b+1)
+sb $b, $r1 (r1 still has 35,mem[35]++)
+Lb $r2, $r4 (get mem[r4])
+Li $k, 3b’011 (00000011)
+Op $r2, 3b’001 (r2 = (mem[r4] && 00000011))
+sh $r2, 3b’010 (r2 = r2 << 3)
+Li $k, 3b’001
+op $r4, 3b’010 (r4 = r4+1)
+Lb $r3, $r4 (get mem[r4+1])
+Li $k, 3b’111 (00000111)
+sh $k, 3b’011
+sh $k, 3b’000
+op $r3, 3b’001 (r3 = mem[r4+1] && 11100000)
+sh $r3, 3b’110
+sh $r3, 3b’101 (r3 = r3 >> 5)
+mov $k, $r3
+op $r2, 3b’000 (r2 = r2   XOR  r3 )
+Li $k, 3b’001
+op $r4, 3b’011 (r4 = r4 - 1)
+mov $k, $r5
+Li  $b, 3b’101
+Sh $b, 3b’000
+b $r2, 3b’101 (if (r2 != r5):jump to r2 = r3, otherwise mem[35]++;)
+Li  $r1, 3b'100 (1)
+Li  $r1, 3b'100 (1) (nonsense just make ti 10 lines)
+Sh $r1, 3b'010
+Li  $k, 3b'011
+Op $r1, 3b'000 (100011=35)
+lb $b, $r1 (b = mem[35])
+Li $k, 3b’001
+Op $b, 3b’010 (b=b+1)
+sb $b, $r1 (r1 still has 35,mem[35]++)
+Lb $r2, $r4 (get mem[r4])
+Li $k, 3b’001 (00000001)
+Op $r2, 3b’001 (r2 = (mem[r4] && 00000001))
+sh $r2, 3b’011 (r2 = r2 << 4)
+li $k, 3b’001
+op $r4, 3b’010 (r4 = r4+1)
+Lb $r3, $r4 (get mem[r4+1])
+li $r1, 3b’111 (00000111)
+sh $r1, 3b’000
+li $k, 3b’001
+op $r1, 3b’010
+mov $k, $r1 (00001111)
+sh $k, 3b’011 (11110000)
+op $r3, 3b’001 (r3 = mem[r4+1] && 11110000)
+sh $r3, 3b’101
+sh $r3, 3b’101 (r3 = r3 >> 4)
+mov $k, $r3
+op $r2, 3b’000 (r2 = r2   XOR  r3 do not decrease r4 so r4 is one here)
+mov $k, $r5
+Li  $b, 3b’101
+Sh $b, 3b’000
+b $r2, 3b’101 (if (r2 != r5):jump to r2 = r3, otherwise mem[35]++;)
+Li  $r1, 3b'100 (1)
+Li  $r1, 3b'100 (1) (nonsense just make ti 10 lines)
+Sh $r1, 3b'010
+Li  $k, 3b'011
+Op $r1, 3b'000 (100011=35)
+lb $b, $r1 (b = mem[35])
+Li $k, 3b’001
+Op $b, 3b’010 (b=b+1)
+sb $b, $r1 (r1 still has 35,mem[35]++)
+li $r1, 3b’111 (111)
+Sh $r1, 3b’001 (become 11100)
+li $k, 3b’011  
+Op $r1, 3b’010 (become 11111)
+Mov $k, $r1
+li $b, 3b’001 (first entry)
+B $r4, 3b’001 (less than 31 jump r4 is already one since does not minus 1 in line 254)
+li $k, 3'b000

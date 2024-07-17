@@ -1,0 +1,584 @@
+li      $r5,  3b'000                          # $r5 : i
+
+# LUT index @ 1
+
+lb      $r4, $r5                         # LSW = mem[i] #Label
+li      $k,  3b'001
+op      $r5, 3b'010                      # i++
+
+
+########## p1
+lb      $r3, $r5                         # MSW = mem[i]
+lb      $r3, $r5                         # load MSW to r3                  
+
+li      $k, 3b'101                       # get b11 b9
+op      $r3, 3b'001                      # 0 0 0 0 0 b11 0 b9
+
+li      $k, 3b'100 
+sh      $k, 3b'011                       # 0 1 0 0 0 0 0 0
+mov     $r2, $r4                         # LSW
+op      $r2, 3b'001                      # 0 b7 0 0 0 0 0 0
+
+sh      $r2, 3b'111                       # 0 0 0 0 0 b7 0 0
+sh      $r2, 3b'100                       # 0 0 0 0 0 0 b7 0
+
+mov     $k, $r2                          
+op      $r3, 3b'000                      # 0 0 0 0 0 b11 b7 b9
+
+sh      $r3, 3b'001                      # 0 0 0 b11 b7 b9  0 0
+
+mov     $r2, $r4                         # LSW 
+li      $k, 3b'011
+op      $r2, 3b'001                      # 0 0 0 0 0 0 b2 b1   
+
+mov     $k, $r2
+op      $r3, 3b'000                      # 0 0 0 b11 b7 b9  b2 b1    
+
+sh      $r3, 3b'001                      # 0  b11 b7 b9  b2 b1 0 0 
+
+mov     $r2, $r4                         # LSW 
+sh      $r2, 3b'110                      # x x x x x x b5 b4
+
+li      $k, 3b'011
+op      $r2, 3b'001                      # 0 0 0 0 0 0 b5 b4   
+mov     $k, $r2
+op      $r3, 3b'000                      # 0  b11 b7 b9  b2 b1 b5 b4 
+
+##########
+# def parity
+##########
+mov     $r2, $r3                # $r2 = 0 0 0 0 0 a7 a6 a5
+sh      $r2,  3b'111                     
+
+mov     $r1, $r3                # $r1 = 0 0 0 0 0 a3 a2 a1
+li      $k, 3b'111
+op      $r1, 3b'001
+
+mov     $k, $r1                 # 0 0 0 0 0 a7 a6 a5 xor 0 0 0 0 0 a3 a2 a1
+op      $r2, 3b'000             # r2 = 0 0 0 0 0 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+
+# construct 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r1, $r3                
+li      $k, 3b'100
+sh      $k,  3b'000 
+op      $r1, 3b'001             # r1 = 0 0 0 0 a4 0 0 0
+mov     $k, $r1 
+op      $r2, 3b'000             # r1 = 0 0 0 0 a4 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r3, $r2
+
+# continue
+mov     $r2, $r3                # $r2 = 0 0 0 0 0 0 a4 (a7 xor a3)
+sh      $r2,  3b'101            # right shift two
+
+mov     $r1, $r3                # $r1 = 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+li      $k,  3b'011             
+op      $r1, 3b'001             # $r1 = 0 0 0 0 0 0 (a6 xor a2) (a5 xor a1)
+mov     $k, $r1                 
+op      $r2, 3b'000             # $r2 0 0 0 0 0 0 ((a6 xor a2) xor a4) ((a5 xor a1) xor (a7 xor a3))
+
+# continue 
+mov     $r1, $r2                
+sh      $r1,  3b'100            # r1 = ((a6 xor a2) xor a4)
+li      $k, 3b'001
+op      $r2, 3b'001             # r2 = ((a5 xor a1) xor (a7 xor a3))
+mov     $k, $r1                 
+op      $r2, 3b'000 
+mov     $r3, $r2
+
+## save
+mov     $r6, $r3
+
+
+###### p2 ######
+lb      $r3, $r5                         # MSW = mem[i]
+li      $k, 3b'110                       
+op      $r3, 3b'001                      # r3 = 0 0 0 0 0 b11 b10 0
+
+mov     $r2, $r4                         # LSW
+li      $k, 3b'001
+op      $r2, 3b'001                      # r2 = b1
+mov     $k, $r2
+
+op      $r3, 3b'000                      # r3 = 0 0 0 0 0 b11 b10 b1
+sh      $r3, 3b'001                      # r3 = 0 0 0 b11 b10 b1  0 0 
+
+mov     $r2, $r4                        
+sh      $r2, 3b'101                     # r2 = xxxx xx b4 b3
+li      $k, 3b'011
+op      $r2, 3b'001                     # r2 = 0 0 0 0 0 0 b4 b3
+mov     $k, $r2                         
+op      $r3' 3b'000                     # r3 = 0 0 0 b11 b10 b1 b4 b3 
+
+sh      $r3, 3b'010                      # r3 = 0 b11 b10 b1 b4 b3 0 0
+
+mov     $r2, $r4                        
+sh      $r2, 3b'111
+sh      $r2, 3b'100                      # r2 = 0 0 0 0 0 0 b7 b6
+
+li      $k, 3b'011
+op      $r2, 3b'001                     # r2 = 0 0 0 0 0 0 b7 b6
+
+mov     $k, $r2                         
+op      $r3, 3b'000                     # r3 = 0 b11 b10 b1 b4 b3 b7 b6
+
+
+
+###################
+### def parity  ###
+###################
+mov     $r2, $r3                # $r2 = 0 0 0 0 0 a7 a6 a5
+sh      $r2,  3b'111                     
+
+mov     $r1, $r3                # $r1 = 0 0 0 0 0 a3 a2 a1
+li      $k, 3b'111
+op      $r1, 3b'001
+
+mov     $k, $r1                 # 0 0 0 0 0 a7 a6 a5 xor 0 0 0 0 0 a3 a2 a1
+op      $r2, 3b'000             # r2 = 0 0 0 0 0 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+
+# construct 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r1, $r3                
+li      $k, 3b'100
+sh      $k,  3b'000 
+op      $r1, 3b'001             # r1 = 0 0 0 0 a4 0 0 0
+mov     $k, $r1 
+op      $r2, 3b'000             # r1 = 0 0 0 0 a4 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r3, $r2
+
+# continue
+mov     $r2, $r3                # $r2 = 0 0 0 0 0 0 a4 (a7 xor a3)
+sh      $r2,  3b'101            # right shift two
+
+mov     $r1, $r3                # $r1 = 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+li      $k,  3b'011             
+op      $r1, 3b'001             # $r1 = 0 0 0 0 0 0 (a6 xor a2) (a5 xor a1)
+mov     $k, $r1                 
+op      $r2, 3b'000             # $r2 0 0 0 0 0 0 ((a6 xor a2) xor a4) ((a5 xor a1) xor (a7 xor a3))
+
+# continue 
+mov     $r1, $r2                
+sh      $r1,  3b'100            # r1 = ((a6 xor a2) xor a4)
+li      $k, 3b'001
+op      $r2, 3b'001             # r2 = ((a5 xor a1) xor (a7 xor a3))
+mov     $k, $r1                 
+op      $r2, 3b'000 
+mov     $r3, $r2
+
+
+#### shift and save
+sh      $r6, 3b'000
+mov     $k,  $r3
+op      $r6, 3b'000
+
+
+
+
+
+
+
+
+###### p4 ######
+lb      $r3, $r5                         # MSW = mem[i]
+li      $k, 3b'111                       
+op      $r3, 3b'001                      # r3 = 0 0 0 0 0 b11 b10 b9
+
+sh      $r3, 3b'000                      # r3 = 0 0 0 0 b11 b10 b9 0
+
+mov     $r2, $r4                         # LSW 
+sh      $r2, 3b'111                      
+sh      $r2, 3b'110                      # r2 = 0 0 0 0 0 0 0 b8
+
+mov     $k, $r2
+op      $r3, 3b'000                      # r3 = 0 0 0 0 b11 b10 b9 b8
+
+sh      $r3, 3b'010                      # r3 = 0 b11 b10 b9 b8 0 0 0
+
+mov     $r2, $r4                         # LSW 
+
+sh      $r2, 3b'100                      
+li      $k, 3b'111
+op      $r2, 3b'001                      # r2 = 0 0 0 0 0 b4 b3 b2
+ 
+mov     $k, $r2
+op      $r3, 3b'000                      # r3 = 0 b11 b10 b9 b8 b4 b3 b2
+
+###################
+### def parity  ###
+###################
+mov     $r2, $r3                # $r2 = 0 0 0 0 0 a7 a6 a5
+sh      $r2,  3b'111                     
+
+mov     $r1, $r3                # $r1 = 0 0 0 0 0 a3 a2 a1
+li      $k, 3b'111
+op      $r1, 3b'001
+
+mov     $k, $r1                 # 0 0 0 0 0 a7 a6 a5 xor 0 0 0 0 0 a3 a2 a1
+op      $r2, 3b'000             # r2 = 0 0 0 0 0 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+
+# construct 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r1, $r3                
+li      $k, 3b'100
+sh      $k,  3b'000 
+op      $r1, 3b'001             # r1 = 0 0 0 0 a4 0 0 0
+mov     $k, $r1 
+op      $r2, 3b'000             # r1 = 0 0 0 0 a4 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r3, $r2
+
+# continue
+mov     $r2, $r3                # $r2 = 0 0 0 0 0 0 a4 (a7 xor a3)
+sh      $r2,  3b'101            # right shift two
+
+mov     $r1, $r3                # $r1 = 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+li      $k,  3b'011             
+op      $r1, 3b'001             # $r1 = 0 0 0 0 0 0 (a6 xor a2) (a5 xor a1)
+mov     $k, $r1                 
+op      $r2, 3b'000             # $r2 0 0 0 0 0 0 ((a6 xor a2) xor a4) ((a5 xor a1) xor (a7 xor a3))
+
+# continue 
+mov     $r1, $r2                
+sh      $r1,  3b'100            # r1 = ((a6 xor a2) xor a4)
+li      $k, 3b'001
+op      $r2, 3b'001             # r2 = ((a5 xor a1) xor (a7 xor a3))
+mov     $k, $r1                 
+op      $r2, 3b'000 
+mov     $r3, $r2
+
+#### shift and save
+sh      $r6, 3b'000
+mov     $k,  $r3
+op      $r6, 3b'000
+
+
+
+
+###### p8 ###########
+lb      $r3, $r5                         # MSW = mem[i]
+li      $k, 3b'111                       
+op      $r3, 3b'001                      # r3 = 0 0 0 0 0 b11 b10 b9
+
+sh      $r3, 3b'001                      # r3 = 0 0 0 b11 b10 b9 0 0 
+
+mov     $r2, $r4                         # LSW 
+sh      $r2, 3b'110
+sh      $r2, 3b'110                      # r2 = 0 0 0 0 0 0 b8 b7
+
+mov     $k, $r2                       
+op      $r3, 3b'000                      # r3 = 0 0 0 b11 b10 b9 b8 b7
+
+sh      $r3, 3b'001                      # r3 = 0 b11 b10 b9 b8 b7 0 0
+
+mov     $r2, $r4                         # LSW 
+sh      $r2, 3b'111                      # r2 = xxxxxx b6 b5
+li      $k, 3b'011 
+op      $r2, 3b'001                      # r2 = 0 0 0 0 0 0 b6 b5
+
+mov     $k, $r2
+op      $r3, 3b'000                      # r3 = 0 b11 b10 b9 b8 b7 b6 b5
+
+
+###################
+### def parity  ###
+###################
+mov     $r2, $r3                # $r2 = 0 0 0 0 0 a7 a6 a5
+sh      $r2,  3b'111                     
+
+mov     $r1, $r3                # $r1 = 0 0 0 0 0 a3 a2 a1
+li      $k, 3b'111
+op      $r1, 3b'001
+
+mov     $k, $r1                 # 0 0 0 0 0 a7 a6 a5 xor 0 0 0 0 0 a3 a2 a1
+op      $r2, 3b'000             # r2 = 0 0 0 0 0 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+
+# construct 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r1, $r3                
+li      $k, 3b'100
+sh      $k,  3b'000 
+op      $r1, 3b'001             # r1 = 0 0 0 0 a4 0 0 0
+mov     $k, $r1 
+op      $r2, 3b'000             # r1 = 0 0 0 0 a4 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r3, $r2
+
+# continue
+mov     $r2, $r3                # $r2 = 0 0 0 0 0 0 a4 (a7 xor a3)
+sh      $r2,  3b'101            # right shift two
+
+mov     $r1, $r3                # $r1 = 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+li      $k,  3b'011             
+op      $r1, 3b'001             # $r1 = 0 0 0 0 0 0 (a6 xor a2) (a5 xor a1)
+mov     $k, $r1                 
+op      $r2, 3b'000             # $r2 0 0 0 0 0 0 ((a6 xor a2) xor a4) ((a5 xor a1) xor (a7 xor a3))
+
+# continue 
+mov     $r1, $r2                
+sh      $r1,  3b'100            # r1 = ((a6 xor a2) xor a4)
+li      $k, 3b'001
+op      $r2, 3b'001             # r2 = ((a5 xor a1) xor (a7 xor a3))
+mov     $k, $r1                 
+op      $r2, 3b'000 
+mov     $r3, $r2
+
+#### shift and save
+sh      $r6, 3b'000
+mov     $k,  $r3
+op      $r6, 3b'000
+
+
+
+###### p0 ###########
+lb      $r3, $r5                         # MSW = mem[i]
+li      $k, 3b'111                       
+op      $r3, 3b'001                      # r3 = 0 0 0 0 0 b11 b10 b9
+
+sh      $r3, 3b'010                      # r3 = 0 0 b11 b10 b9 0 0 0 
+
+mov     $r2, $r4                         # LSW 
+sh      $r2, 3b'111
+sh      $r2, 3b'100                      # r2 = 0 0 0 0 0 b8 b7 b6
+
+mov     $k, $r2
+op      $r3, 3b'000                      # r3 = 0 0 b11 b10 b9 b8 b7 b6
+
+sh      $r3, 3b'000                      # r3 = 0 b11 b10 b9 b8 b7 b6 0 
+
+mov     $r2, $r4                         # LSW 
+sh      $r2, 3b'010
+sh      $r2, 3b'111                      
+sh      $r2, 3b'110                      # r2 = 0 0 0 0 0 0 0 b5
+
+mov     $k, $r2
+op      $r3, 3b'000                      # r3 = 0 b11 b10 b9 b8 b7 b6 b5 
+
+
+###################
+### def parity  ###
+###################
+mov     $r2, $r3                # $r2 = 0 0 0 0 0 a7 a6 a5
+sh      $r2,  3b'111                     
+
+mov     $r1, $r3                # $r1 = 0 0 0 0 0 a3 a2 a1
+li      $k, 3b'111
+op      $r1, 3b'001
+
+mov     $k, $r1                 # 0 0 0 0 0 a7 a6 a5 xor 0 0 0 0 0 a3 a2 a1
+op      $r2, 3b'000             # r2 = 0 0 0 0 0 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+
+# construct 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r1, $r3                
+li      $k, 3b'100
+sh      $k,  3b'000 
+op      $r1, 3b'001             # r1 = 0 0 0 0 a4 0 0 0
+mov     $k, $r1 
+op      $r2, 3b'000             # r1 = 0 0 0 0 a4 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r3, $r2
+
+# continue
+mov     $r2, $r3                # $r2 = 0 0 0 0 0 0 a4 (a7 xor a3)
+sh      $r2,  3b'101            # right shift two
+
+mov     $r1, $r3                # $r1 = 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+li      $k,  3b'011             
+op      $r1, 3b'001             # $r1 = 0 0 0 0 0 0 (a6 xor a2) (a5 xor a1)
+mov     $k, $r1                 
+op      $r2, 3b'000             # $r2 0 0 0 0 0 0 ((a6 xor a2) xor a4) ((a5 xor a1) xor (a7 xor a3))
+
+# continue 
+mov     $r1, $r2                
+sh      $r1,  3b'100            # r1 = ((a6 xor a2) xor a4)
+li      $k, 3b'001
+op      $r2, 3b'001             # r2 = ((a5 xor a1) xor (a7 xor a3))
+mov     $k, $r1                 
+op      $r2, 3b'000 
+mov     $b, $r2
+
+### Now b is the patrial result
+
+mov     $r2, $r4                         # LSW 
+sh      $r2, 3b'110                   
+li      $k, 3b'001 
+op      $r2, 3b'001                      # r2 = 0 0 0 0 0 0 0 b4
+mov     $k, $r2
+
+op      $b, 3b'000                       # Now b is xor (b11~b4)
+
+mov     $r3, $r6                         # r3 = 0 0 0 0 p1 p2 p4 p8
+sh      $r3, 3b'010                      # r3 = 0 p1 p2 p4 p8 0 0 0 
+
+mov     $r2, $r4                         # LSW              
+li      $k, 3b'111
+op      $r2, 3b'001                      # r2 = 0 0 0 0 0 b3 b2 b1
+
+mov     $k, $r2
+op      $r3, 3b'000                      # # r3 = 0 p1 p2 p4 p8 b3 b2 b1
+
+###################
+### def parity  ###
+###################
+mov     $r2, $r3                # $r2 = 0 0 0 0 0 a7 a6 a5
+sh      $r2,  3b'111                     
+
+mov     $r1, $r3                # $r1 = 0 0 0 0 0 a3 a2 a1
+li      $k, 3b'111
+op      $r1, 3b'001
+
+mov     $k, $r1                 # 0 0 0 0 0 a7 a6 a5 xor 0 0 0 0 0 a3 a2 a1
+op      $r2, 3b'000             # r2 = 0 0 0 0 0 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+
+# construct 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r1, $r3                
+li      $k, 3b'100
+sh      $k,  3b'000 
+op      $r1, 3b'001             # r1 = 0 0 0 0 a4 0 0 0
+mov     $k, $r1 
+op      $r2, 3b'000             # r1 = 0 0 0 0 a4 (a7 xor a3) (a6 xor a2) (a5 xor a1)
+mov     $r3, $r2
+
+# continue
+mov     $r2, $r3                # $r2 = 0 0 0 0 0 0 a4 (a7 xor a3)
+sh      $r2,  3b'101            # right shift two
+
+mov     $r1, $r3                # $r1 = 0 0 0 0 a4  (a7 xor a3) (a6 xor a2) (a5 xor a1)
+li      $k,  3b'011             
+op      $r1, 3b'001             # $r1 = 0 0 0 0 0 0 (a6 xor a2) (a5 xor a1)
+mov     $k, $r1                 
+op      $r2, 3b'000             # $r2 0 0 0 0 0 0 ((a6 xor a2) xor a4) ((a5 xor a1) xor (a7 xor a3))
+
+# continue 
+mov     $r1, $r2                
+sh      $r1,  3b'100            # r1 = ((a6 xor a2) xor a4)
+li      $k, 3b'001
+op      $r2, 3b'001             # r2 = ((a5 xor a1) xor (a7 xor a3))
+mov     $k, $r1                 
+op      $r2, 3b'000 
+
+## put the result and xor again
+
+mov     $k, $r2
+op      $b, 3b'000              # p0
+
+#### shift and save
+sh      $r6, 3b'000
+mov     $k,  $b
+op      $r6, 3b'000
+
+
+############ prepare the written data ###########
+lb      $r3, $r5                         # MSW = mem[i]
+li      $k, 3b'111                       
+op      $r3, 3b'001                      # r3 = 0 0 0 0 0 b11 b10 b9
+
+sh      $r3, 3b'011                      # r3 = 0 b11 b10 b9 0 0 0 0
+
+mov     $r2, $r4                         # LSW
+sh      $r2, 3b'111                      # r2 = 0 0 0 0 b8 b7 b6 b5   
+
+mov     $k, $r2
+op      $r3, 3b'000                      # r3 = 0 b11 b10 b9 b8 b7 b6 b5   
+
+sh      $r3, 3b'000                      # r3 = b11 b10 b9 b8 b7 b6 b5 0
+
+mov     $r2, $r6
+li      $k, 3b'010              
+op      $r2, 3b'001                      # r2 = 0 0 0 0 0 0 p8 0
+
+sh      $r2, 3b'100                      # r2 = 0 0 0 0 0 0 0 p8   
+mov     $k, $r2
+op      $r3, 3b'000                      # r3 = b11 b10 b9 b8 b7 b6 b5 p8
+
+### construct 30
+li      $r2, 3b'111
+sh      $r2, 3b'000                     
+li      $k,  3b'001
+op      $r2, 3b'000                    
+sh      $r2, 3b'000                      # $r2 = 30
+####
+
+mov     $k, $r5                          # if
+op      $r2, 3b'010                      # i+30
+sb      $r3, $r2                         # mem[i+30] = MSW
+
+#### i--
+li      $k, 3b'001
+op      $r5, 3b'011                     # i--
+
+mov     $r2, $r4                        # LSW
+sh      $r2, 3b'100                     # r2 = xxxxx b4 b3 b2
+
+li      $k, 3b'111
+op      $r2, 3b'001                     # r2 = 00000 b4 b3 b2
+
+mov     $r3, $r2                        # r3 = 00000 b4 b3 b2
+sh      $r3, 3b'000                     # r3 = 0000 b4 b3 b2 0
+
+mov     $r2, $r6                        # r2 = 0 0 0 p1 p2 p4 p8 p0
+li      $k, 3b'100
+op      $r2, 3b'001                     # r2 = 0 0 0 0 0 p4 0 0
+
+sh      $r2, 3b'101                     # r2 = 0 0 0 0 0 0 0 p4
+
+mov     $k, $r2
+op      $r3, 3b'000                     # r3 = 0000 b4 b3 b2 p4
+
+sh      $r3, 3b'000                     # r3 = 000 b4 b3 b2 p4 0
+
+mov     $r2, $r4                        # LSW
+li      $k, 3b'001                      
+op      $r2, 3b'001                     # r2 = 0 0 0 0 0 0 0 b1
+
+mov     $k, $r2
+op      $r3, 3b'000                     # r3 = 000 b4 b3 b2 p4 b1
+
+sh      $r3, 3b'000                     # r3 = 0 0 b4 b3 b2 p4 b1 0
+
+mov     $r2, $r6                        # r2 = 0 0 0 p1 p2 p4 p8 p0
+sh      $r2, 3b'110                     # r2 = 0 0 0 0 0 0 p1 p2
+li      $k, 3b'001
+op      $r2, 3b'001                     # r2 = 0 0 0 0 0 0 0 p2
+mov     $k, $r2
+op      $r3, 3b'000                     # r3 = 00 b4 b3 b2 p4 b1 p2
+sh      $r3, 3b'000                     # r3 = 0 b4 b3 b2 p4 b1 p2 0
+
+mov     $r2, $r6                        # r2 = 0 0 0 p1 p2 p4 p8 p0
+sh      $r2, 3b'111                     # r2 = 0 0 0 0 0 0 0 p1 
+mov     $k, $r2
+op      $r3, 3b'000                     # r3 = 0 b4 b3 b2 p4 b1 p2 p1
+sh      $r3, 3b'000                     # r3 = b4 b3 b2 p4 b1 p2 p1 0
+
+
+mov     $r2, $r6                        # r2 = 0 0 0 p1 p2 p4 p8 p0
+li      $k, 3b'001
+op      $r2, 3b'001                     # r2 = 0 0 0 0 0 0 0 p0
+
+mov     $k, $r2
+op      $r3, 3b'000                     # r3 = b4 b3 b2 p4 b1 p2 p1 p0
+
+### 
+### construct 30
+###
+
+li      $r2, 3b'111
+sh      $r2, 3b'000                     
+li      $k,  3b'001
+op      $r2, 3b'000                    
+sh      $r2, 3b'000                      # $r2 = 30
+####
+
+mov     $k, $r5                          # if
+op      $r2, 3b'010                      # i+30
+sb      $r3, $r2                         # mem[i+30] = LSW
+
+
+
+# loop checking
+li      $k,  3b'010
+op      $r5, 3b'010                     # i += 2
+mov     $r1, $r5                        # check if i < 30
+
+li      $r2, 3b'111
+sh      $r2, 3b'000                     
+li      $k,  3b'001
+op      $r2, 3b'000                    
+sh      $r2, 3b'000                      # $r2 = 30
+
+mov     $k,  $r2
+li      $b,  3b'001
+b       $r1, 3b'001                     # if i < 30: set pc to #001 entry in the LUT and loop again
